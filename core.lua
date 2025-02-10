@@ -226,5 +226,27 @@ function core.move(access_token, file_ids, new_location)
 end
 
 
+-- [[
+-- Shares a file or folder
+--
+-- Takes access token, file_id
+-- Return tables containing "status": string, "share_type": string, "wopi": boolean, "size": int, "viewmode": string, "pid": b%d.%d, "is_encrypted": boolean, "id": string, "has_password": boolean,
+-- "readable": boolean, "count": int, "writable": boolean, "last_modified": timestamp, "path": string, "mime_type": string, "uri": uri, "file_type": string, "created": timestamp
+-- ]]
+function core.share(access_token, file_id)
+   assert(file_id)
+   local data = {
+       viewmode = "a",
+	   pid = file_id
+   }
+   local data_encoded = _core.url_form_encode(data)
+   print(data_encoded)
+   return _core.post(access_token, "https://hidrive.ionos.com/api/share", data_encoded)
+end
+
+
+
+
+
 
 return core
