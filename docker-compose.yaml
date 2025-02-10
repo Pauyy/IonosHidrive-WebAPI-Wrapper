@@ -1,0 +1,7 @@
+services:
+  app:
+    build: .
+    container_name: hidrive-core
+    command: lua debug.lua
+    volumes: 
+      - .:/opt
