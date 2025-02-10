@@ -68,4 +68,7 @@ return {
 After the first usage it will create a file called `cache.lua` wich contains the access_token and other usefull information.  
 The Debug File loads the core library. To call and test any Methods use `local res = core.any_method()`  
 
+## With Docker
+Using `docker compose up` will start execute `debug.lua` in a docker container.
+
 
