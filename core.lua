@@ -261,14 +261,25 @@ function core.move(access_token, file_ids, new_location)
    return _core.post(access_token, "https://hidrive.ionos.com/api/fs/move", data_encoded)
 end
 
+-- Determines if a file share should be created, updated or deleted based on on the properties of the passed parameters
+function core.file_share(access_token, _id, data)
+    assert(_id, "Some sort of identification is needed")
+    if data ~= nil then
+        return core.update_file_share(access_token, _id, data)
+    elseif _id:match("b%d+%.%d+") then
+        return core.create_file_share(access_token, _id)
+    else
+        return core.delete_file_share(access_token, _id)
+    end
+end
+
 -- Share a single File
 -- Folder Shares have different uri and different paramters than file Shares
-function core.create_file_share(access_token, pid, _type)
+function core.create_file_share(access_token, pid)
    assert(pid)
-   assert(_type == "file")
    local data = {
        pid= pid,
-       type= _type
+       type= "file"
    }
    local data_encoded = _core.url_form_encode(data)
    return _core.post(access_token, "https://hidrive.ionos.com/api/sharelink", data_encoded)
@@ -290,7 +301,7 @@ end
 -- data as table with 
 -- password: string (the password for the share)
 -- ttl: seconds (how long the share should be available, must be larger or equal than 86400)
--- maxcount: int (maximum of allowed downloads)
+-- maxcount: int or empty string (maximum of allowed downloads or infinite)
 function core.update_file_share(access_token, id, data)
     assert(id)
     assertOnlyContainAllowedKeys(data, {"password", "ttl", "maxcount"})
@@ -299,6 +310,17 @@ function core.update_file_share(access_token, id, data)
     return _core.put(access_token, "https://hidrive.ionos.com/api/sharelink", data_encoded)
  end
 
+-- Determines if a file share should be created, updated or deleted based on on the properties of the passed parameters
+function core.folder_share(access_token, _id, data)
+    assert(_id, "Some sort of identification is needed")
+    if data ~= nil then
+        return core.update_folder_share(access_token, _id, data)
+    elseif _id:match("b%d+%.%d+") then
+        return core.create_folder_share(access_token, _id)
+    else
+        return core.delete_folder_share(access_token, _id)
+    end
+end
 
 -- [[
 -- Shares a folder
@@ -324,14 +346,14 @@ end
 -- Removes the share of a folder
 -- Folder shares have different uri and different paramters than file shares
 --
--- Takes access token, file_id
+-- Takes access token, id as in /lnk/{id}
 -- Return tables containing "status": string, "share_type": string, "wopi": boolean, "size": int, "viewmode": string, "pid": b%d.%d, "is_encrypted": boolean, "id": string, "has_password": boolean,
 -- "readable": boolean, "count": int, "writable": boolean, "last_modified": timestamp, "path": string, "mime_type": string, "uri": uri, "file_type": string, "created": timestamp
 -- ]]
-function core.delete_folder_share(access_token, file_id)
-   assert(file_id)
+function core.delete_folder_share(access_token, id)
+   assert(id)
    local data = {
-       id = file_id
+       id = id
    }
    local data_encoded = _core.url_form_encode(data)
    print(data_encoded)
