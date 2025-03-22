@@ -261,10 +261,12 @@ function core.move(access_token, file_ids, new_location)
    return _core.post(access_token, "https://hidrive.ionos.com/api/fs/move", data_encoded)
 end
 
--- Determines if a file share should be created, updated or deleted based on on the properties of the passed parameters
-function core.file_share(access_token, _id, data)
+-- Determines if a file share should be created, updated, deleted or send by mail based on on the properties of the passed parameters
+function core.file_share(access_token, _id, data, message)
     assert(_id, "Some sort of identification is needed")
-    if data ~= nil then
+    if message ~= nil then
+        return core.mail_file_share(access_token, _id, data, message)
+    elseif data ~= nil then
         return core.update_file_share(access_token, _id, data)
     elseif _id:match("b%d+%.%d+") then
         return core.create_file_share(access_token, _id)
@@ -308,12 +310,31 @@ function core.update_file_share(access_token, id, data)
     data["id"] = id
     local data_encoded = _core.url_form_encode(data)
     return _core.put(access_token, "https://hidrive.ionos.com/api/sharelink", data_encoded)
- end
+end
 
--- Determines if a file share should be created, updated or deleted based on on the properties of the passed parameters
-function core.folder_share(access_token, _id, data)
+-- Sends the share as an email
+-- id as in lnk/{id}
+-- recipient: mail (the mail to wich should recive the share)
+-- msg: string (the message in the mail)
+function core.mail_file_share(access_token, id, recipient, msg)
+    assert(id)
+    assert(recipient)
+    local data = {
+        id = id,
+        recipient = recipient,
+        msg = msg,
+        lang = "de"
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/sharelink/invite", data_encoded)
+end
+
+-- Determines if a file share should be created, updated, deleted or send by mail based on on the properties of the passed parameters
+function core.folder_share(access_token, _id, data, message)
     assert(_id, "Some sort of identification is needed")
-    if data ~= nil then
+    if message ~= nil then
+        return core.mail_folder_share(access_token, _id, data, message)
+    elseif data ~= nil then
         return core.update_folder_share(access_token, _id, data)
     elseif _id:match("b%d+%.%d+") then
         return core.create_folder_share(access_token, _id)
@@ -373,6 +394,23 @@ function core.update_folder_share(access_token, id, data)
     data["id"] = id
     local data_encoded = _core.url_form_encode(data)
     return _core.put(access_token, "https://hidrive.ionos.com/api/share", data_encoded)
- end
+end
+
+-- Sends the share as an email
+-- id as in lnk/{id}
+-- recipient: mail (the mail to wich should recive the share)
+-- msg: string (the message in the mail)
+function core.mail_folder_share(access_token, id, recipient, msg)
+    assert(id)
+    assert(recipient)
+    local data = {
+        id = id,
+        recipient = recipient,
+        msg = msg,
+        lang = "de"
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/share/invite", data_encoded)
+end
 
 return core
