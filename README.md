@@ -11,8 +11,8 @@ A Lua Programm that wraps alot of features present in the Ionos HiDrive Web Fron
 - [X] Meta Data bout files
 - [X] Rename Files
 - [X] Move Files to new Location
-- [ ] Share Files
-- [ ] Revoke Share
+- [X] Share Files
+- [X] Revoke Share
 - [ ] Create Share Upload
 - [ ] Create Mail Upload
 - [ ] Refresh Session

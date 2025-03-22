@@ -69,6 +69,16 @@ function _core.post(access_token, endpoint, body)
     return res
 end
 
+function _core.delete(access_token, endpoint, body)
+    body = body or {}
+    assert(access_token)
+    local header = {
+        Authorization = "Bearer " .. access_token,
+        ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
+    }
+    local res = requests.delete { url = endpoint, headers = header, data = body }
+    return res
+end
 
 
 -- [[
@@ -227,13 +237,14 @@ end
 
 
 -- [[
--- Shares a file or folder
+-- Shares a folder
+-- Folder Shares have different uri and different paramters than file Shares
 --
 -- Takes access token, file_id
 -- Return tables containing "status": string, "share_type": string, "wopi": boolean, "size": int, "viewmode": string, "pid": b%d.%d, "is_encrypted": boolean, "id": string, "has_password": boolean,
 -- "readable": boolean, "count": int, "writable": boolean, "last_modified": timestamp, "path": string, "mime_type": string, "uri": uri, "file_type": string, "created": timestamp
 -- ]]
-function core.share(access_token, file_id)
+function core.create_folder_share(access_token, file_id)
    assert(file_id)
    local data = {
        viewmode = "a",
@@ -245,7 +256,23 @@ function core.share(access_token, file_id)
 end
 
 
-
+-- [[
+-- Removes the share of a folder
+-- Folder shares have different uri and different paramters than file shares
+--
+-- Takes access token, file_id
+-- Return tables containing "status": string, "share_type": string, "wopi": boolean, "size": int, "viewmode": string, "pid": b%d.%d, "is_encrypted": boolean, "id": string, "has_password": boolean,
+-- "readable": boolean, "count": int, "writable": boolean, "last_modified": timestamp, "path": string, "mime_type": string, "uri": uri, "file_type": string, "created": timestamp
+-- ]]
+function core.delete_folder_share(access_token, file_id)
+   assert(file_id)
+   local data = {
+       id = file_id
+   }
+   local data_encoded = _core.url_form_encode(data)
+   print(data_encoded)
+   return _core.delete(access_token, "https://hidrive.ionos.com/api/share", data_encoded)
+end
 
 
 
