@@ -504,4 +504,18 @@ function core.delete_mail_upload(access_token, path)
     return _core.delete(access_token, "https://hidrive.ionos.com/api/mailupload", data_encoded)
 end
 
+-- Zip Multiple Files
+-- dst as path (where the zip should be located and wich name it should have)
+-- src as table with paths (wich files should be zipped together)
+function core.zip(access_token, dst, src)
+    assert(type(dst) == "string")
+    assert(type(src) == "table")
+    local data = {
+        dst = dst,
+        src = src
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/file/archive/deflate", data_encoded)
+end
+
 return core
