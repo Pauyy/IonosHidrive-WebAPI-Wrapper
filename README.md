@@ -14,7 +14,7 @@ A Lua Programm that wraps alot of features present in the Ionos HiDrive Web Fron
 - [X] Share Files
 - [X] Revoke Share
 - [X] Update Share Properties
-- [ ] Create Share Upload
+- [X] Create Share Upload
 - [ ] Create Mail Upload
 - [ ] Refresh Session
 - [X] Share by Mail

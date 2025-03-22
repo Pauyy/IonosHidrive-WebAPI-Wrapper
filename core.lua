@@ -413,4 +413,46 @@ function core.mail_folder_share(access_token, id, recipient, msg)
     return _core.post(access_token, "https://hidrive.ionos.com/api/share/invite", data_encoded)
 end
 
+-- Create a share to upload data into the provided path
+-- path: path (in wich data can be uploaded)
+-- data as table with 
+-- maxsize: int like 2147483647, 1073741824, 524288000, 104857600, 10485760 (size in bit or somtehing like that)
+-- password: string (password with wich the share is secured)
+-- ttl: int (seconds the share is valid)
+-- maxcount: int (max number of allowed uploads)
+function core.create_share_upload(access_token, path, data)
+    assert(path)
+    assertOnlyContainAllowedKeys(data, {"maxsize", "password", "ttl", "maxcount"})
+    data["path"] = path
+    data["type"] = "dir"
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/shareupload", data_encoded)
+end
+
+
+-- id as in /upl/{id}
+-- data as table with 
+-- maxsize: int maximum 2147483647 (size in bit or somtehing like that)
+-- password: string (password with wich the share is secured)
+-- ttl: int (seconds the share is valid)
+-- maxcount: int (max number of allowed uploads)
+function core.update_share_upload(access_token, id, data)
+    assert(id)
+    assertOnlyContainAllowedKeys(data, {"maxsize", "password", "ttl", "maxcount"})
+    data["id"] = id
+    local data_encoded = _core.url_form_encode(data)
+    return _core.put(access_token, "https://hidrive.ionos.com/api/shareupload", data_encoded)
+end
+
+-- Deletes a share upload
+-- id as in /upl/{id}
+function core.delete_share_upload(access_token, id)
+    assert(id)
+    local data = {
+        id = id
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.delete(access_token, "https://hidrive.ionos.com/api/shareupload", data_encoded)
+end
+
 return core
