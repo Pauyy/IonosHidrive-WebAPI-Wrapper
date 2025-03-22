@@ -1,8 +1,22 @@
 local requests = require('requests')
 
+-- Util
+-- The given table is only allowed to contains passed keys
+local function assertOnlyContainAllowedKeys(t, keys)
+    -- Convert "Array" to "Map"
+    for k, v in ipairs(keys) do keys[v] = true end
+
+    for key, _ in pairs(t) do
+        if type(key) ~= nil then
+            assert(keys[key], "The given table contains the forbidden key " .. string.format("%q", key) .. " but the only allowed keys are " .. table.concat(keys, ", "))
+        end
+    end
+end
+
 local core = {}
 local _core = {}
 
+-- TODO support numbers
 function _core.url_form_encode(params)
     local encoded = {}
     assert(type(params) == 'table', 'Expected a table to url form encode and not a ' .. type(params))
@@ -78,6 +92,18 @@ function _core.delete(access_token, endpoint, body)
         ["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
     }
     local res = requests.delete { url = endpoint, headers = header, data = body }
+    return res
+end
+
+function _core.put(access_token, endpoint, body)
+    body = body or {}
+    assert(access_token)
+    local header = {
+        Authorization = "Bearer " .. access_token,
+        ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
+        ["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
+    }
+    local res = requests.put { url = endpoint, headers = header, data = body }
     return res
 end
 
@@ -259,6 +285,20 @@ function core.delete_file_share(access_token, id)
    return _core.delete(access_token, "https://hidrive.ionos.com/api/sharelink", data_encoded)
 end
 
+-- Update properties of a folder share
+-- id as in lnk/{id}
+-- data as table with 
+-- password: string (the password for the share)
+-- ttl: seconds (how long the share should be available, must be larger or equal than 86400)
+-- maxcount: int (maximum of allowed downloads)
+function core.update_file_share(access_token, id, data)
+    assert(id)
+    assertOnlyContainAllowedKeys(data, {"password", "ttl", "maxcount"})
+    data["id"] = id
+    local data_encoded = _core.url_form_encode(data)
+    return _core.put(access_token, "https://hidrive.ionos.com/api/sharelink", data_encoded)
+ end
+
 
 -- [[
 -- Shares a folder
@@ -298,6 +338,19 @@ function core.delete_folder_share(access_token, file_id)
    return _core.delete(access_token, "https://hidrive.ionos.com/api/share", data_encoded)
 end
 
-
+-- Update properties of a folder share
+-- id as in lnk/{id}
+-- data as table with 
+-- writable: boolean (if anyone should be allowed to change file)
+-- password: string (the password for the share)
+-- ttl: seconds (how long the share should be available, must be larger or equal than 86400)
+-- viewmode: "a" or "b" or "c"
+function core.update_folder_share(access_token, id, data)
+    assert(id)
+    assertOnlyContainAllowedKeys(data, {"writable", "password", "ttl", "viewmode"})
+    data["id"] = id
+    local data_encoded = _core.url_form_encode(data)
+    return _core.put(access_token, "https://hidrive.ionos.com/api/share", data_encoded)
+ end
 
 return core
