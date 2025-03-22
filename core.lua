@@ -455,4 +455,53 @@ function core.delete_share_upload(access_token, id)
     return _core.delete(access_token, "https://hidrive.ionos.com/api/shareupload", data_encoded)
 end
 
+-- Creates a Mail Upload
+-- path: path (in wich data will be uploaded)
+-- data as table with
+-- overwrite: true (if duplicate file names should be overwritten)
+-- reportok: true (if mail should be returned to uploader with status)
+-- reportto: "email" (if mail should be send to account owner that someone uploaded something)
+-- subfolder: true (if a subfolder per uploader should be created)
+-- ttl: int (seconds the share is valid)
+function core.create_mail_upload(access_token, path, data)
+    assert(path)
+    assertOnlyContainAllowedKeys(data, {"overwrite", "reportok", "reportto", "subfolder", "ttl"})
+
+    local unique_data =  _core.get(access_token, "https://hidrive.ionos.com/api/unique").json()
+    print("Here unique", unique_data)
+    data["unique"] = unique_data["unique"]
+    data["unique_mac"] = unique_data["unique_mac"]
+
+    data["path"] = path
+    data["type"] = "dir"
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/mailupload", data_encoded)
+end
+
+-- Update Mail Uplaod
+-- overwrite: boolean (if duplicate file names should be overwritten)
+-- reportok: boolean (if mail should be returned to uploader with status)
+-- reportto: "email" or "none" (if mail should be send to account owner that someone uploaded something)
+-- subfolder: boolean (if a subfolder per uploader should be created)
+-- ttl: int (seconds the share is valid)
+function core.update_mail_upload(access_token, path, data)
+    assert(path)
+    assertOnlyContainAllowedKeys(data, {"overwrite", "reportok", "reportto", "subfolder", "ttl"})
+
+    data["path"] = path
+    local data_encoded = _core.url_form_encode(data)
+    return _core.put(access_token, "https://hidrive.ionos.com/api/mailupload", data_encoded)
+end
+
+-- Deletes a Mail Upload
+-- path as path
+function core.delete_mail_upload(access_token, path)
+    assert(path)
+    local data = {
+        path = path
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.delete(access_token, "https://hidrive.ionos.com/api/mailupload", data_encoded)
+end
+
 return core
