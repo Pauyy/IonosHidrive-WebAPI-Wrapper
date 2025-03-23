@@ -9,8 +9,14 @@ if true then
 end
 
 local function print_table(t)
-    for k, v in pairs(t) do
-        print(k, v)
+    if #t > 1 then
+        for k, v in ipairs(t) do
+            print_table(v)
+        end
+    else
+        for k, v in pairs(t) do
+            print(k, v)
+        end
     end
 end
 
