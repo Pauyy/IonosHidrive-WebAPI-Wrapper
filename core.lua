@@ -95,7 +95,7 @@ function _core.delete(access_token, endpoint, body)
     return res
 end
 
-function _core.put(access_token, endpoint, body)
+function _core.put(access_token, endpoint, body, params)
     body = body or {}
     assert(access_token)
     local header = {
@@ -103,7 +103,27 @@ function _core.put(access_token, endpoint, body)
         ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
         ["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
     }
-    local res = requests.put { url = endpoint, headers = header, data = body }
+    -- Right now Params are only used in a put request when uploading files. Uploading Files does not have a specific Content-Type
+    -- Hardcoding it this way will backfire, but well
+    if params then
+        header["Content-Type"] = nil
+    else
+        params = {}
+    end
+
+    local res = requests.put { url = endpoint, headers = header, data = body, params = params }
+    return res
+end
+
+function _core.patch(access_token, endpoint, body, params)
+    body = body or {}
+    params = params or {}
+    assert(access_token)
+    local header = {
+        Authorization = "Bearer " .. access_token,
+        ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
+    }
+    local res = requests.patch { url = endpoint, headers = header, data = body, params = params }
     return res
 end
 
@@ -517,6 +537,72 @@ function core.zip(access_token, dst, src)
     }
     local data_encoded = _core.url_form_encode(data)
     return _core.post(access_token, "https://hidrive.ionos.com/api/file/archive/deflate", data_encoded)
+end
+
+-- Uploads a given string as bytes
+function _core.upload_file_bytes(access_token, bytes, dir_id, filename, file_creation_time)
+    local params = {
+        dir_id = dir_id,
+        name = filename,
+        mtime = file_creation_time
+    }
+    return _core.put(access_token, "https://hidrive.ionos.com/api/file", bytes, params)
+end
+
+-- Uploads a given file
+function _core.upload_file_filehandle(access_token, file, dir_id, filename, file_creation_time)
+    local temp_filename = filename .. os.date("%Y%m%d%H%M%S", os.time()) .. ".webupload"
+    local params = {
+        dir_id = dir_id,
+        name = temp_filename,
+        mtime = file_creation_time
+    }
+    local bytes = file:read(5242880)
+    print("Start File Upload")
+    local response = {}
+    -- Upload First 5mb of file
+    local upload_response = _core.put(access_token, "https://hidrive.ionos.com/api/file", bytes, params)
+    table.insert(response, upload_response)
+    --extract the id of the uploaded file to append missing data
+    local id = response[1].json()["id"]
+    local finished_bytes = 5242880
+    while true do
+        -- Read next 5mb of file
+        bytes = file:read(5242880)
+        if not bytes then break end
+        params = {
+            pid = id,
+            offset = finished_bytes,
+            mtime = file_creation_time
+        }
+        -- "Patch" uploaded file with next 5mb of data
+        local patch_response = _core.patch(access_token, "https://hidrive.ionos.com/api/file", bytes, params)
+        table.insert(response, patch_response)
+        --update offset
+        finished_bytes = finished_bytes + 5242880
+    end
+    file:close()
+    if response[#response].status_code == 204 then
+        local rename_response = core.rename(access_token, id, filename)
+        table.insert(response, rename_response)
+    end
+    return response
+end
+
+-- Generic Upload Function that takes a string or file and decides how to correctly upload them
+-- File Upload will happen in 5mb batches
+-- file as string or file (the data that will be uploaded)
+-- Takes dir_id as id (of dir to upload)
+-- Filename as string (the name the file will have after download)
+-- file_creation_time as int (unix timestamp)
+function core.upload_file(access_token, file, dir_id, filename, file_creation_time)
+    -- TODO Check if a file with same name already exists and abort
+    if type(file) == "userdata" then
+        return _core.upload_file_filehandle(access_token, file, dir_id, filename, file_creation_time)
+    elseif type(file) == "string" then
+        return _core.upload_file_bytes(access_token, file, dir_id, filename, file_creation_time)
+    end
+    assert(nil, "passed file type neither a filehandler or string")
 end
 
 return core
