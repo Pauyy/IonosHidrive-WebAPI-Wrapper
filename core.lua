@@ -233,11 +233,12 @@ end
 -- "image": image data -> width, exif -> ImageHeight, ImageWidth, "height": int, "type": file or something else as string
 -- ]]
 function core.rename(access_token, file_id, new_name)
-   local params = {
+   local data = {
        name = new_name,
        pid = file_id
    }
-   return _core.post(access_token, "https://hidrive.ionos.com/api/file/rename", params)
+   local data_encoded = _core.url_form_encode(data)
+   return _core.post(access_token, "https://hidrive.ionos.com/api/file/rename", data_encoded)
 end
 
 -- [[
