@@ -597,7 +597,10 @@ end
 -- Filename as string (the name the file will have after download)
 -- file_creation_time as int (unix timestamp)
 function core.upload_file(access_token, file, dir_id, filename, file_creation_time)
-    -- TODO Check if a file with same name already exists and abort
+    local meta = core.meta(access_token, dir_id, filename)
+    if meta.status_code ~= 404 then
+        assert(nil, "File with name " .. filename .. " already exists in directory.\nID: " .. meta.json().id)
+    end
     if type(file) == "userdata" then
         return _core.upload_file_filehandle(access_token, file, dir_id, filename, file_creation_time)
     elseif type(file) == "string" then
