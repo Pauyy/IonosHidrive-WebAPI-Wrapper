@@ -656,4 +656,16 @@ function core.upload_file(access_token, file, dir_id, filename, file_creation_ti
     assert(nil, "passed file type neither a filehandler or string")
 end
 
+-- Delete a file or folder
+-- id as id or array with ids (file or folder to delete)
+function core.delete_file(access_token, id)
+    assert(type(id) == "string" or type(id) == "table")
+    local data = {
+        pid = id,
+        recursive = "true"
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/fs/delete", data_encoded)
+end
+
 return core
