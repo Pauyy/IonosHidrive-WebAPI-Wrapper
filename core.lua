@@ -668,4 +668,20 @@ function core.delete_file(access_token, id)
     return _core.post(access_token, "https://hidrive.ionos.com/api/fs/delete", data_encoded)
 end
 
+-- Copys a file (or multiple) into a specific folder
+-- src_id as id (the file or folder to be copied)
+-- dst_id as id (the destination (folder) of the copy process)
+function core.copy_file(access_token, src_id, dst_id)
+    assert(type(src_id) == "string" or type(src_id) == "table")
+    assert(type(dst_id) == "string")
+    local data = {
+        src_id = src_id,
+        dst_id = dst_id,
+        on_exist = "autoname",
+        preserve_mtime = "true"
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/fs/copy", data_encoded)
+end
+
 return core
