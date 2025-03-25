@@ -20,7 +20,7 @@ A Lua Programm that wraps alot of features present in the Ionos HiDrive Web Fron
 - [X] Share by Mail
 - [X] Get Archive Information
 - [X] Zip Files
-- [ ] Unzip Files
+- [X] Unzip Files
 - [ ] Delete Files
 - [ ] Download Files
 - [X] Upload Files

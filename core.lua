@@ -563,6 +563,29 @@ function core.zip(access_token, dst, src)
     return _core.post(access_token, "https://hidrive.ionos.com/api/file/archive/deflate", data_encoded)
 end
 
+-- Unzip a single file
+-- file_id as id file to unzip
+-- dst_name as string (name of the folder to be created in wich the content of the file will be placed)
+function core.unzip(access_token, file_id, dst_name)
+    local archive_data = core.archive(access_token, file_id)
+    local parent_folder = archive_data.json().parent_id
+    local file_name = archive_data.json().name
+    dst_name = dst_name or file_name:sub(1, #file_name - 4) -- TODO If there will be a moment where the zip does not end in .zip, this will backfire horribly
+
+    local dir_data = core.create_dir(access_token, parent_folder, dst_name)
+    local dst_id = dir_data.json().id
+
+    local data = {
+        pid = file_id,
+        dst_id = dst_id,
+        exists = "skipall",
+        forbidden = "skipall",
+        unprocessable = "skipall"
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/file/archive/inflate", data_encoded)
+end
+
 -- Uploads a given string as bytes
 function _core.upload_file_bytes(access_token, bytes, dir_id, filename, file_creation_time)
     local params = {
