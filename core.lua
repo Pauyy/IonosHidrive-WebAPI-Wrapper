@@ -207,7 +207,8 @@ function core.zone()
     return _core.get("", "https://hidrive.ionos.com/api/zone?scope=all")
 end
 
-function core.dir(access_token, path, sort, ok_response_codes)
+-- path with parent_id is also valid
+function core.get_dir(access_token, path, sort, ok_response_codes)
     sort = sort or 'none'
     path = path or "/"
     local params = {
@@ -218,6 +219,19 @@ function core.dir(access_token, path, sort, ok_response_codes)
         sort= sort
     }
     return _core.get(access_token, "https://hidrive.ionos.com/api/dir", params, ok_response_codes)
+end
+
+-- Create a dir inside a parent directorie
+-- pid as id (id of the folder in which a new folder should be created)
+-- name as string (name of the folder to be created)
+function core.create_dir(access_token, pid, name)
+    local data = {
+        pid = pid,
+        path = name,
+        on_exist = "autoname"
+    }
+    local data_encoded = _core.url_form_encode(data)
+    return _core.post(access_token, "https://hidrive.ionos.com/api/dir", data_encoded)
 end
 
 function core.thumbnail(access_token, file_id, refresh_time, width)
