@@ -656,9 +656,9 @@ function core.upload_file(access_token, file, dir_id, filename, file_creation_ti
     assert(nil, "passed file type neither a filehandler or string")
 end
 
--- Delete a file or folder
--- id as id or array with ids (file or folder to delete)
-function core.delete_file(access_token, id)
+-- Delete a multiple of files and or folders
+-- id as id or array with ids (files or folders to delete)
+function core.delete(access_token, id)
     assert(type(id) == "string" or type(id) == "table")
     local data = {
         pid = id,
@@ -668,10 +668,11 @@ function core.delete_file(access_token, id)
     return _core.post(access_token, "https://hidrive.ionos.com/api/fs/delete", data_encoded)
 end
 
--- Copys a file (or multiple) into a specific folder
--- src_id as id (the file or folder to be copied)
+
+-- Copys a files and or folders into a specific folder
+-- src_id as id or array (the files or folders to be copied)
 -- dst_id as id (the destination (folder) of the copy process)
-function core.copy_file(access_token, src_id, dst_id)
+function core.copy(access_token, src_id, dst_id)
     assert(type(src_id) == "string" or type(src_id) == "table")
     assert(type(dst_id) == "string")
     local data = {
