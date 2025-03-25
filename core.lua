@@ -233,15 +233,16 @@ end
 -- [[
 -- Retrive Meta Information about file
 --
--- Takes access token and file_id
+-- Takes access token and 'file_id' or 'directory id and filename'
 -- Return tables containing "chash": SHA-1 Hash, "id": b%d.%d, "name": string, "mtime": timestamp, "size": bytes, "writable": boolean
 -- ]]
-function core.meta(access_token, file_id)
-   local params = {
-       fields = "id,chash,mtime,name,size,writable",
-       pid = file_id
-   }
-   return _core.get(access_token, "https://hidrive.ionos.com/api/meta", params)
+function core.meta(access_token, file_id, name)
+    local params = {
+        fields = "id,chash,ctime,mtime,name,size,readable,writable",
+        pid = file_id,
+        path = name
+    }
+    return _core.get(access_token, "https://hidrive.ionos.com/api/meta", params)
 end
 
 -- [[
