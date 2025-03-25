@@ -613,6 +613,7 @@ function _core.upload_file_filehandle(access_token, file, dir_id, filename, file
     --extract the id of the uploaded file to append missing data
     local id = response[1].json()["id"]
     local finished_bytes = 5242880
+    -- It probably could happen that while uploading a large file for a long time the access_token could expire. We probabyly should check how long it is valid and maybe refresh it
     while true do
         -- Read next 5mb of file
         bytes = file:read(5242880)
