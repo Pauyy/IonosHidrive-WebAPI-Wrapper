@@ -540,6 +540,15 @@ function core.delete_mail_upload(access_token, path)
     return _core.delete(access_token, "https://hidrive.ionos.com/api/mailupload", data_encoded)
 end
 
+-- Get Information about an archive
+-- id as id (the archive to retrieve information about)
+function core.archive(access_token, id)
+    local params = {
+        pid = id
+    }
+    return _core.get(access_token, "https://hidrive.ionos.com/api/file/archive", params)
+end
+
 -- Zip Multiple Files
 -- dst as path (where the zip should be located and wich name it should have)
 -- src as table with paths (wich files should be zipped together)
