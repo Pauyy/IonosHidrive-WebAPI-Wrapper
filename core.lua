@@ -685,4 +685,19 @@ function core.copy(access_token, src_id, dst_id)
     return _core.post(access_token, "https://hidrive.ionos.com/api/fs/copy", data_encoded)
 end
 
+function core.download(access_token, pid, local_filename)
+    print("Warning: Large File Downloads could fill out RAM.")
+    assert(pid)
+    local data = {
+        attachment = "true",
+        pid = pid
+    }
+    local file = assert(io.open(local_filename, "wb"))
+    local response = _core.get(access_token, "https://hidrive.ionos.com/api/file", data)
+
+    file:write(response.text)
+    file:close()
+    return response, true
+end
+
 return core
