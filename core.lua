@@ -254,7 +254,7 @@ function core.meta(access_token, file_id, name)
     local params = {
         fields = "id,chash,ctime,mtime,name,size,readable,writable",
         pid = file_id,
-        path = name
+        path = name or nil
     }
     return _core.get(access_token, "https://hidrive.ionos.com/api/meta", params)
 end
@@ -692,6 +692,8 @@ function core.download(access_token, pid, local_filename)
         attachment = "true",
         pid = pid
     }
+    local_filename = local_filename or core.meta(access_token, pid).json().name
+
     local file = assert(io.open(local_filename, "wb"))
     local response = _core.get(access_token, "https://hidrive.ionos.com/api/file", data)
 
