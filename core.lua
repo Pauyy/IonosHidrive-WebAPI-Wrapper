@@ -725,7 +725,7 @@ function core.download(access_token, pid, local_filename)
         attachment = "true",
         pid = pid
     }
-    local_filename = local_filename or core.meta(access_token, pid).json().name
+    local_filename = local_filename or core.meta(access_token, pid).json().name:gsub("%%20", " ")
 
     local file = assert(io.open(local_filename, "wb"))
     local response = _core.save_response_to_file(access_token, "https://hidrive.ionos.com/api/file", data, file)
