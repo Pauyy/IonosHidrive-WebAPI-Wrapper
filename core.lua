@@ -195,6 +195,22 @@ function core.login(username, password)
 end
 
 -- [[
+-- Refreshes Session
+-- 
+-- Takes access token
+-- Returns table with "session_id": string, "status": string, "acces_token": string, "expires": int
+-- ]]
+function core.refresh(session_id)
+    assert(session_id)
+    local header = {
+        ["X-STG-Session"] = session_id,
+        ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0"
+    }
+    local res = requests.get { url = "https://hidrive.ionos.com/auth/session/refresh", headers = header }
+    return res
+end
+
+-- [[
 -- Retrive Information about logged in Account
 --
 -- Takes access token

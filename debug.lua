@@ -45,7 +45,8 @@ elseif auth_data.till < os.time() then
     verbose("Cached access_token invalid, refresh cache!")
     auth_data.access_token = write_cache_to_disk(core.login(username, password))
 elseif auth_data.till - 2700 < os.time() then
-    verbose("Should refresh, should implement")
+    verbose("Refresh access_token")
+    auth_data.access_token = write_cache_to_disk(core.refresh(auth_data.session_id).json())
 else
     verbose("Cache successfully loaded!")
 end
