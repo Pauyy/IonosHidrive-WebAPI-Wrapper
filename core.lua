@@ -457,6 +457,7 @@ end
 -- ttl: int (seconds the share is valid)
 -- maxcount: int (max number of allowed uploads)
 function core.create_share_upload(access_token, path, data)
+    data = data or {}
     assert(path)
     assertOnlyContainAllowedKeys(data, {"maxsize", "password", "ttl", "maxcount"})
     data["path"] = path
