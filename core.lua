@@ -1,4 +1,6 @@
 local requests = require('requests')
+local https_socket = require('ssl.https')
+local ltn12 = require('ltn12')
 
 -- Util
 -- The given table is only allowed to contains passed keys
@@ -46,9 +48,12 @@ function _core.url_form_encode(params)
 end
 
 function _core.format_get_params(params)
-   assert(type(params) == 'table')
-   error("Not implemented")
-   return ""
+    assert(type(params) == 'table')
+    local s = "?"
+    for k, v in pairs(params) do 
+        s = s .. k .. "=" .. v .. "&"
+    end
+    return s:sub(1, -2)
 end
 
 function _core.switch_table_values_with_keys(t)
@@ -125,6 +130,34 @@ function _core.patch(access_token, endpoint, body, params)
     }
     local res = requests.patch { url = endpoint, headers = header, data = body, params = params }
     return res
+end
+
+-- Warning, this method is not really dynamic. We are currently just expecting to save with a get request and get query params
+function _core.save_response_to_file(access_token, endpoint, params, file_handle)
+    local file = file_handle
+    assert(io.type(file_handle) == "file", "Given File was closed or not actually a file: " .. io.type(file_handle))
+    assert(access_token)
+
+    local header = {
+        Authorization = "Bearer " .. access_token,
+        ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0"
+    }
+    local sink = ltn12.sink.file(file)
+    local get_param = _core.format_get_params(params)
+    local url = endpoint .. get_param
+
+    local full_request = {
+        method = 'GET',
+        url = url,
+        headers = header,
+        sink = sink
+    }
+    local ok, status_code, headers, status = https_socket.request(full_request)
+    return {
+        status_code = status_code,
+        status = status,
+        headers = headers
+    }
 end
 
 -- [[
@@ -687,7 +720,6 @@ function core.copy(access_token, src_id, dst_id)
 end
 
 function core.download(access_token, pid, local_filename)
-    print("Warning: Large File Downloads could fill out RAM.")
     assert(pid)
     local data = {
         attachment = "true",
@@ -696,11 +728,8 @@ function core.download(access_token, pid, local_filename)
     local_filename = local_filename or core.meta(access_token, pid).json().name
 
     local file = assert(io.open(local_filename, "wb"))
-    local response = _core.get(access_token, "https://hidrive.ionos.com/api/file", data)
-
-    file:write(response.text)
-    file:close()
-    return response, true
+    local response = _core.save_response_to_file(access_token, "https://hidrive.ionos.com/api/file", data, file)
+    return response
 end
 
 return core
