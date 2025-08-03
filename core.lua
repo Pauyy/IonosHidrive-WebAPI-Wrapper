@@ -75,11 +75,11 @@ function _core.delete(access_token, endpoint, body)
     local header = {
         Authorization = "Bearer " .. access_token,
         ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
+        ["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
     }
     local res = requests.delete { url = endpoint, headers = header, data = body }
     return res
 end
-
 
 -- [[
 -- Log into and hidrive account
@@ -233,6 +233,30 @@ function core.move(access_token, file_ids, new_location)
    local data_encoded = _core.url_form_encode(data)
    print(data_encoded)
    return _core.post(access_token, "https://hidrive.ionos.com/api/fs/move", data_encoded)
+end
+
+-- Share a single File
+-- Folder Shares have different uri and different paramters than file Shares
+function core.create_file_share(access_token, pid, _type)
+   assert(pid)
+   assert(_type == "file")
+   local data = {
+       pid= pid,
+       type= _type
+   }
+   local data_encoded = _core.url_form_encode(data)
+   return _core.post(access_token, "https://hidrive.ionos.com/api/sharelink", data_encoded)
+end
+
+-- ID that references the share -> https://hidrive.ionos.com/lnk/{id}
+-- Folder Shares have different uri and different paramters than file Shares
+function core.delete_file_share(access_token, id)
+   assert(id)
+   local data = {
+       id= id
+   }
+   local data_encoded = _core.url_form_encode(data)
+   return _core.delete(access_token, "https://hidrive.ionos.com/api/sharelink", data_encoded)
 end
 
 
